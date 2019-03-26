@@ -590,13 +590,16 @@ function updatePrompt() {
 }
 
 function gp_add_rust_version_to_prompt {
-  local Green="\[\033[0;32m\]"
-  local GIT_ROOT=$(git rev-parse --show-toplevel)
   local ACCUMULATED_RUST_VERSION_PROMPT=""
-  local RUSTV=""
-  IFS=' ' read -r -a RUSTV <<< "$(rustc -V)"
-  if [[ -f "${GIT_ROOT}/Cargo.toml"  ]]; then
-	  ACCUMULATED_RUST_VERSION_PROMPT=" ${Green}rust $(basename "${RUSTV[1]}")"
+  local in_repo=$(we_are_on_repo)
+  if [[ $in_repo = 1 ]]; then
+    local RUSTV=""
+    local Green="\[\033[0;32m\]"
+    local GIT_ROOT=$(git rev-parse --show-toplevel)
+    IFS=' ' read -r -a RUSTV <<< "$(rustc -V)"
+    if [[ -f "${GIT_ROOT}/Cargo.toml"  ]]; then
+      ACCUMULATED_RUST_VERSION_PROMPT=" ${Green}rust $(basename "${RUSTV[1]}")"
+    fi
   fi
   echo "$ACCUMULATED_RUST_VERSION_PROMPT"
 }
