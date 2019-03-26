@@ -278,7 +278,7 @@ function git_prompt_config() {
   if [[ "$GIT_PROMPT_ONLY_IN_REPO" = 1 ]]; then
     EMPTY_PROMPT="$OLD_GITPROMPT"
   else
-    local ps="$(gp_add_virtualenv_to_prompt)$PROMPT_START$($prompt_callback)$PROMPT_END"
+	  local ps="$(gp_add_virtualenv_to_prompt)$PROMPT_START$(gp_add_rust_version_to_prompt)$($prompt_callback)$PROMPT_END"
     EMPTY_PROMPT="${ps//_LAST_COMMAND_INDICATOR_/${LAST_COMMAND_INDICATOR}}"
   fi
 
@@ -580,7 +580,7 @@ function updatePrompt() {
     fi
     __add_status        "$ResetColor$GIT_PROMPT_SUFFIX"
 
-    NEW_PROMPT="$(gp_add_virtualenv_to_prompt)$PROMPT_START$($prompt_callback)$STATUS_PREFIX$STATUS$PROMPT_END"
+    NEW_PROMPT="$(gp_add_virtualenv_to_prompt)$PROMPT_START$(gp_add_rust_version_to_prompt)$($prompt_callback)$STATUS_PREFIX$STATUS$PROMPT_END"
   else
     NEW_PROMPT="$EMPTY_PROMPT"
   fi
@@ -589,6 +589,17 @@ function updatePrompt() {
   command rm "$GIT_INDEX_PRIVATE" 2>/dev/null
 }
 
+function gp_add_rust_version_to_prompt {
+  local Green="\[\033[0;32m\]"
+  local GIT_ROOT=$(git rev-parse --show-toplevel)
+  local ACCUMULATED_RUST_VERSION_PROMPT=""
+  local RUSTV=""
+  IFS=' ' read -r -a RUSTV <<< "$(rustc -V)"
+  if [[ -f "${GIT_ROOT}/Cargo.toml"  ]]; then
+	  ACCUMULATED_RUST_VERSION_PROMPT=" ${Green}rust $(basename "${RUSTV[1]}")"
+  fi
+  echo "$ACCUMULATED_RUST_VERSION_PROMPT"
+}
 # Helper function that returns virtual env information to be set in prompt
 # Honors virtualenvs own setting VIRTUAL_ENV_DISABLE_PROMPT
 function gp_add_virtualenv_to_prompt {
